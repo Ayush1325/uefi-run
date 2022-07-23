@@ -8,6 +8,9 @@ use wait_timeout::ChildExt;
 pub struct QemuConfig {
     pub qemu_path: String,
     pub bios_path: String,
+    pub vars_path: String,
+    pub shell_path: String,
+    pub output_path: String,
     pub drives: Vec<QemuDriveConfig>,
     pub additional_args: Vec<String>,
 }
@@ -17,8 +20,11 @@ impl Default for QemuConfig {
         Self {
             qemu_path: "qemu-system-x86_64".to_string(),
             bios_path: "OVMF.fd".to_string(),
+            vars_path: "OVMF_VARS.fd".to_string(),
+            shell_path: "UefiShell.iso".to_string(),
+            output_path: "Output.txt".to_string(),
             drives: Vec::new(),
-            additional_args: vec!["-net".to_string(), "none".to_string()],
+            additional_args: vec![],
         }
     }
 }
@@ -26,14 +32,42 @@ impl Default for QemuConfig {
 impl QemuConfig {
     /// Run an instance of qemu with the given config
     pub fn run(&self) -> Result<QemuProcess> {
-        let mut args = vec!["-bios".to_string(), self.bios_path.clone()];
-        for (index, drive) in self.drives.iter().enumerate() {
+        let mut args = Vec::new();
+        let mut index = 0;
+
+        args.push("-drive".to_string());
+        args.push(format!(
+            "if=pflash,format=raw,file={},index={}",
+            self.bios_path, index,
+        ));
+        index += 1;
+
+        args.push("-drive".to_string());
+        args.push(format!(
+            "if=pflash,format=raw,file={},index={}",
+            self.vars_path, index,
+        ));
+        index += 1;
+
+        args.push("-drive".to_string());
+        args.push(format!(
+            "format=raw,file={},index={}",
+            self.shell_path, index,
+        ));
+        index += 1;
+
+        for drive in self.drives.iter() {
             args.push("-drive".to_string());
             args.push(format!(
                 "file={},index={},media={},format={}",
                 drive.file, index, drive.media, drive.format
             ));
+            index += 1;
         }
+
+        args.push("-serial".to_string());
+        args.push(format!("file:{}", self.output_path));
+
         args.extend(self.additional_args.iter().cloned());
 
         let child = Command::new(&self.qemu_path).args(args).spawn()?;

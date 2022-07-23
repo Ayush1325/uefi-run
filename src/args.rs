@@ -13,11 +13,27 @@ use std::path::PathBuf;
 )]
 pub struct Args {
     /// Bios image
-    #[clap(long, short = 'b', default_value = "OVMF.fd")]
+    #[clap(
+        long,
+        short = 'b',
+        default_value = "/home/ayush/Documents/Programming/scripts/Tianocore/OVMF/OVMF_CODE.fd"
+    )]
     pub bios_path: String,
+    // OVMF Vars Path
+    #[clap(
+        long,
+        default_value = "/home/ayush/Documents/Programming/scripts/Tianocore/OVMF/OVMF_VARS.fd"
+    )]
+    pub vars_path: String,
+    // OVMF Shell Path
+    #[clap(long, default_value = "/home/ayush/Downloads/OVMF/UefiShell.iso")]
+    pub shell_path: String,
     /// Path to qemu executable
     #[clap(long, short = 'q', default_value = "qemu-system-x86_64")]
     pub qemu_path: String,
+    /// Path to qemu executable
+    #[clap(long, short = 'o', default_value = "output.txt")]
+    pub output_path: String,
     /// Size of the image in MiB
     #[clap(long, short = 's', default_value_t = 10)]
     pub size: u64,

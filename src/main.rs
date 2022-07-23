@@ -60,6 +60,9 @@ fn main() {
     let mut qemu_config = QemuConfig {
         qemu_path: args.qemu_path,
         bios_path: args.bios_path,
+        vars_path: args.vars_path,
+        shell_path: args.shell_path,
+        output_path: args.output_path,
         drives: vec![QemuDriveConfig {
             file: image_file_path.to_str().unwrap().to_string(),
             media: "disk".to_string(),
